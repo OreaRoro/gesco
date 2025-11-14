@@ -17,7 +17,6 @@ import DatePicker from "../../components/form/date-picker";
 import { ArrowLeftIcon } from "../../icons";
 import {
   FaPlus,
-  FaEdit,
   FaTrash,
   FaPrint,
   FaHistory,
@@ -121,6 +120,7 @@ const EleveAbsence: React.FC = () => {
   );
 
   // Générer le calendrier
+  // Générer le calendrier
   const generateCalendar = useCallback(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
@@ -131,12 +131,21 @@ const EleveAbsence: React.FC = () => {
     const lastDay = new Date(year, month + 1, 0);
 
     // Premier jour à afficher (peut être du mois précédent)
+    // On commence par le lundi de la semaine du premier jour
     const startDay = new Date(firstDay);
-    startDay.setDate(startDay.getDate() - startDay.getDay());
+    const dayOfWeek = startDay.getDay(); // 0=dimanche, 1=lundi, etc.
+
+    // Ajuster pour commencer le lundi (si dimanche, reculer de 6 jours, sinon reculer de (dayOfWeek - 1) jours)
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    startDay.setDate(startDay.getDate() - daysToSubtract);
 
     // Dernier jour à afficher (peut être du mois suivant)
     const endDay = new Date(lastDay);
-    endDay.setDate(endDay.getDate() + (6 - endDay.getDay()));
+    const endDayOfWeek = endDay.getDay(); // 0=dimanche, 1=lundi, etc.
+
+    // Ajuster pour terminer le dimanche (si pas dimanche, avancer jusqu'au dimanche)
+    const daysToAdd = endDayOfWeek === 0 ? 0 : 7 - endDayOfWeek;
+    endDay.setDate(endDay.getDate() + daysToAdd);
 
     const days: CalendarDay[] = [];
     const currentDate = new Date(startDay);
@@ -145,14 +154,19 @@ const EleveAbsence: React.FC = () => {
     // Créer un map des pointages par date pour un accès rapide
     const pointagesMap = new Map();
     pointages.forEach((pointage) => {
-      const pointageDate = new Date(pointage.date_pointage).toDateString();
-      pointagesMap.set(pointageDate, pointage);
+      const pointageDate = new Date(pointage.date_pointage);
+      const dateKey = `${pointageDate.getFullYear()}-${
+        pointageDate.getMonth() + 1
+      }-${pointageDate.getDate()}`;
+      pointagesMap.set(dateKey, pointage);
     });
 
     while (currentDate <= endDay) {
       const date = new Date(currentDate);
-      const dateString = date.toDateString();
-      const pointage = pointagesMap.get(dateString);
+      const dateKey = `${date.getFullYear()}-${
+        date.getMonth() + 1
+      }-${date.getDate()}`;
+      const pointage = pointagesMap.get(dateKey);
 
       days.push({
         date,
@@ -434,67 +448,6 @@ const EleveAbsence: React.FC = () => {
           </ComponentCard>
         )}
 
-        {/* Filtres */}
-        <ComponentCard title="Filtres">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <DatePicker
-              id="date_debut"
-              name="date_debut"
-              label="Date de début"
-              placeholder="Sélectionnez la date de début"
-              register={register}
-              setValue={setValue}
-              error={errors.date_debut}
-            />
-
-            <DatePicker
-              id="date_fin"
-              name="date_fin"
-              label="Date de fin"
-              placeholder="Sélectionnez la date de fin"
-              register={register}
-              setValue={setValue}
-              validation={{
-                validate: {
-                  afterStart: (value) =>
-                    !value ||
-                    !watchedDateDebut ||
-                    new Date(value) >= new Date(watchedDateDebut) ||
-                    "La date de fin doit être après la date de début",
-                },
-              }}
-              error={errors.date_fin}
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Statut
-              </label>
-              <select
-                {...register("statut")}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-              >
-                <option value="">Tous les statuts</option>
-                <option value="present">Présent</option>
-                <option value="absent">Absent</option>
-                <option value="retard">Retard</option>
-                <option value="justifie">Justifié</option>
-                <option value="exclu">Exclu</option>
-              </select>
-            </div>
-
-            <div className="flex items-end">
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Réinitialiser
-              </button>
-            </div>
-          </div>
-        </ComponentCard>
-
         {/* Calendrier des pointages */}
         <ComponentCard
           title={`Calendrier des pointages - ${currentMonth.toLocaleDateString(
@@ -505,21 +458,21 @@ const EleveAbsence: React.FC = () => {
           <div className="mb-4 flex items-center justify-between">
             <button
               onClick={handlePreviousMonth}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 text-gray-600 dark:text-gray-25 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5" />
             </button>
 
             <button
               onClick={() => setCurrentMonth(new Date())}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-25 bg-white border dark:bg-gray-800 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Aujourd'hui
             </button>
 
             <button
               onClick={handleNextMonth}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 text-gray-600 dark:text-gray-25 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5 rotate-180" />
             </button>
@@ -529,23 +482,23 @@ const EleveAbsence: React.FC = () => {
             {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
               <div
                 key={day}
-                className="p-2 text-sm font-medium text-center text-gray-900 bg-gray-50"
+                className="p-2 text-sm font-medium text-center text-gray-900 dark:text-gray-300 bg-gray-50 dark:bg-gray-900"
               >
                 {day}
               </div>
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-1 ">
             {calendarDays.map((day, index) => (
               <div
                 key={index}
                 className={getDayClassNames(day)}
                 onClick={() => handleDayClick(day)}
               >
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-1 ">
                   <span
-                    className={`text-sm font-medium ${
+                    className={`text-sm font-medium  ${
                       day.isToday
                         ? "text-blue-600"
                         : !day.isCurrentMonth
@@ -612,6 +565,67 @@ const EleveAbsence: React.FC = () => {
           </div>
         </ComponentCard>
 
+        {/* Filtres */}
+        <ComponentCard title="Filtres">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            <DatePicker
+              id="date_debut"
+              name="date_debut"
+              label="Date de début"
+              placeholder="Sélectionnez la date de début"
+              register={register}
+              setValue={setValue}
+              error={errors.date_debut}
+            />
+
+            <DatePicker
+              id="date_fin"
+              name="date_fin"
+              label="Date de fin"
+              placeholder="Sélectionnez la date de fin"
+              register={register}
+              setValue={setValue}
+              validation={{
+                validate: {
+                  afterStart: (value) =>
+                    !value ||
+                    !watchedDateDebut ||
+                    new Date(value) >= new Date(watchedDateDebut) ||
+                    "La date de fin doit être après la date de début",
+                },
+              }}
+              error={errors.date_fin}
+            />
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Statut
+              </label>
+              <select
+                {...register("statut")}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+              >
+                <option value="">Tous les statuts</option>
+                <option value="present">Présent</option>
+                <option value="absent">Absent</option>
+                <option value="retard">Retard</option>
+                <option value="justifie">Justifié</option>
+                <option value="exclu">Exclu</option>
+              </select>
+            </div>
+
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Réinitialiser
+              </button>
+            </div>
+          </div>
+        </ComponentCard>
+
         {/* Liste détaillée (optionnelle - vous pouvez la cacher si vous préférez seulement le calendrier) */}
         <ComponentCard title="Historique détaillé">
           {pointages.length > 0 ? (
@@ -619,24 +633,49 @@ const EleveAbsence: React.FC = () => {
               <Table>
                 <TableHeader className="border-b border-gray-100 dark:border-white/5">
                   <TableRow>
-                    <TableCell isHeader>Date</TableCell>
-                    <TableCell isHeader>Statut</TableCell>
-                    <TableCell isHeader>Heures</TableCell>
-                    <TableCell isHeader>Remarque</TableCell>
-                    <TableCell isHeader>Actions</TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs"
+                    >
+                      Date
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs"
+                    >
+                      Statut
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs"
+                    >
+                      Heures
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs"
+                    >
+                      Remarque
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs"
+                    >
+                      Actions
+                    </TableCell>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pointages.map((pointage) => (
                     <TableRow key={pointage.id}>
-                      <TableCell>
+                      <TableCell className="px-5  text-gray-600">
                         <div className="flex items-center gap-2">
-                          <FaCalendar className="w-4 h-4 text-gray-400" />
+                          <FaCalendar className="w-4 h-4 text-gray-600" />
                           <span>{formatDate(pointage.date_pointage)}</span>
                         </div>
                       </TableCell>
                       <TableCell>{getStatutBadge(pointage.statut)}</TableCell>
-                      <TableCell>
+                      <TableCell className="px-5 text-gray-500">
                         {pointage.heure_arrivee && (
                           <div className="space-y-1">
                             <div>Arrivée: {pointage.heure_arrivee}</div>
@@ -646,10 +685,10 @@ const EleveAbsence: React.FC = () => {
                           </div>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-5 text-gray-500">
                         {pointage.remarque || pointage.justification || "-"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="px-5 text-center text-gray-500">
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleDeletePointage(pointage.id)}
