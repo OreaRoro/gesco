@@ -1,0 +1,17 @@
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# PHP Composer
+backend/vendor/
+backend/.env
+backend/.env.*
+backend/writable/
+
+# OS / IDE
+.DS_Store
+*.log
+*.cache
+.vscode/
+.idea/

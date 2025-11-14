@@ -1,0 +1,13 @@
+<svg width="80" height="60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Corps de la souris -->
+  <rect x="15" y="5" width="25" height="40" rx="8" fill="#FF6600"/>
+  
+  <!-- Boutons -->
+  <rect x="22" y="10" width="11" height="15" fill="#999"/>
+  
+  <!-- Roulette -->
+  <ellipse cx="27.5" cy="35" rx="3" ry="2" fill="#FF6600"/>
+  
+  <!-- Câble -->
+  <path d="M40 15 L50 10 L40 5 Z" fill="#FF6600"/>
+</svg>

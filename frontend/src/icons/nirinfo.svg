@@ -1,0 +1,24 @@
+<svg width="300" height="100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Définition de la souris -->
+    <g id="souris">
+      <rect x="0" y="5" width="25" height="40" rx="8" fill="#FF6600"/>
+      <rect x="7" y="10" width="11" height="15" fill="#999"/>
+      <ellipse cx="12.5" cy="35" rx="3" ry="2" fill="#FF6600"/>
+      <path d="M25 15 L35 10 L25 5 Z" fill="#FF6600"/>
+    </g>
+  </defs>
+  
+  <!-- Texte Nir'Info -->
+  <text x="10" y="45" font-family="Arial, sans-serif" font-size="24" font-weight="bold">
+    N
+    <tspan fill="#FF6600">i</tspan>
+    r
+    <tspan fill="#FF6600">'</tspan>
+    I
+    <tspan>nfo</tspan>
+  </text>
+  
+  <!-- Souris à la fin -->
+  <use href="#souris" x="140" y="25"/>
+</svg>
