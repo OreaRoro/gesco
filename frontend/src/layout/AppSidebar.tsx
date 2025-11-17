@@ -43,26 +43,25 @@ const navItems: NavItem[] = [
     name: "Enseignants",
     icon: <UserCircleIcon />,
     subItems: [
-      { name: "Liste des enseignants", path: "/liste-enseignants" },
-      { name: "Pointage enseignants", path: "/pointage-enseignants" },
-      { name: "Matières assignées", path: "/matieres-enseignants" },
+      { name: "Liste des enseignants", path: "/enseignants" },
+      { name: "Matières assignées", path: "/enseignants/matieres" },
+      { name: "Pointage enseignants", path: "/enseignants/pointage" },
     ],
   },
   {
     name: "Personnel",
     icon: <GroupIcon />, // ou créer une icône spécifique
     subItems: [
-      { name: "Liste du personnel", path: "/liste-personnel" },
-      { name: "Pointage personnel", path: "/pointage-personnel" },
+      { name: "Liste du personnel", path: "/personnel" },
+      { name: "Pointage personnel", path: "/personnel/pointage" },
     ],
   },
   {
     name: "Examens & Notes",
     icon: <PieChartIcon />,
     subItems: [
-      { name: "Saisie des notes", path: "/saisie-notes" },
-      { name: "Bulletins de notes", path: "/bulletins" },
       { name: "Gestion des examens", path: "/examens" },
+      { name: "Bulletins de notes", path: "/bulletins" },
     ],
   },
   {

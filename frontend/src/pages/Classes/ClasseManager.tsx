@@ -25,12 +25,17 @@ import PageMeta from "../../components/common/PageMeta.tsx";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb.tsx";
 import ConfirmationModal from "../../components/common/ConfirmationModal.tsx";
 
+export interface PersonnelFilters {
+  search?: string;
+  type_personnel?: string;
+  statut?: string;
+}
+
 const ClasseManager: React.FC = () => {
   const [classes, setClasses] = useState<Classe[]>([]);
   const [niveaux, setNiveaux] = useState<any[]>([]);
   const [fraisParAnnee, setFraisParAnnee] = useState<Record<number, any[]>>({});
   const [personnel, setPersonnel] = useState<any[]>([]);
-  const [surveillant, setSurveillant] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [editingClasse, setEditingClasse] = useState<Classe | null>(null);
@@ -66,17 +71,14 @@ const ClasseManager: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [niveauxRes, fraisRes, personnelRes, surveillantRes] =
-        await Promise.all([
-          niveauService.getAll(),
-          fraisService.getFraisScolarite(),
-          personnelService.getAdministratif(),
-          personnelService.getAdministratif(),
-        ]);
+      const [niveauxRes, fraisRes, personnelRes] = await Promise.all([
+        niveauService.getAll(),
+        fraisService.getFraisScolarite(),
+        personnelService.All(),
+      ]);
 
       setNiveaux(niveauxRes.data?.niveaux || []);
-      setPersonnel(personnelRes?.data?.administratif || []);
-      setSurveillant(surveillantRes?.data?.administratif || []);
+      setPersonnel(personnelRes?.data?.personnel || []);
 
       // Organiser les frais par année scolaire
       const fraisOrganises: Record<number, any[]> = {};
@@ -136,7 +138,6 @@ const ClasseManager: React.FC = () => {
   const onSubmit = async (data: ClasseCreateRequest) => {
     setSubmitting(true);
     try {
-      // Utiliser automatiquement l'année active
       if (!anneeActive?.id) {
         toast.error("Aucune année scolaire active sélectionnée");
         setSubmitting(false);
@@ -145,7 +146,7 @@ const ClasseManager: React.FC = () => {
 
       const classeData = {
         ...data,
-        annee_scolaire_id: anneeActive.id, // Toujours utiliser l'année active
+        annee_scolaire_id: anneeActive.id,
       };
 
       if (editingClasse) {
@@ -219,7 +220,6 @@ const ClasseManager: React.FC = () => {
           result[classe.id] = 0;
         }
       }
-      console.log(result);
       setEffectifs(result);
     };
 

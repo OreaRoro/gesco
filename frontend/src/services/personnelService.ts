@@ -1,16 +1,16 @@
-import { api } from "./http/api";
+import api from "./http/api";
 
 export interface Personnel {
   id: number;
   matricule: string;
   nom: string;
   prenom: string;
-  sexe?: "M" | "F";
-  date_naissance?: string;
-  lieu_naissance?: string;
-  adresse?: string;
-  telephone?: string;
-  email?: string;
+  sexe: "M" | "F" | null;
+  date_naissance: string | null;
+  lieu_naissance: string | null;
+  adresse: string | null;
+  telephone: string | null;
+  email: string | null;
   type_personnel:
     | "enseignant"
     | "surveillant"
@@ -18,23 +18,23 @@ export interface Personnel {
     | "menage"
     | "direction"
     | "autre";
-  date_embauche: string;
-  salaire_base?: number;
+  date_embauche: string | null;
+  salaire_base: string;
   statut: "actif" | "inactif" | "congé" | "licencie";
-  photo?: string;
+  photo: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export interface PersonnelCreateRequest {
+export interface PersonnelFormData {
   nom: string;
   prenom: string;
-  sexe?: "M" | "F";
-  date_naissance?: string;
-  lieu_naissance?: string;
-  adresse?: string;
-  telephone?: string;
-  email?: string;
+  sexe: "M" | "F" | "";
+  date_naissance: string;
+  lieu_naissance: string;
+  adresse: string;
+  telephone: string;
+  email: string;
   type_personnel:
     | "enseignant"
     | "surveillant"
@@ -43,93 +43,70 @@ export interface PersonnelCreateRequest {
     | "direction"
     | "autre";
   date_embauche: string;
-  salaire_base?: number;
+  salaire_base: string;
   statut: "actif" | "inactif" | "congé" | "licencie";
-  photo?: string;
+  photo?: File | null;
 }
 
-export const personnelService = {
-  async getAll(
-    params?: any
-  ): Promise<{ data: { personnel: Personnel[]; total: number } }> {
+export interface PersonnelFilters {
+  search?: string;
+  type_personnel?: string;
+  statut?: string;
+}
+
+class PersonnelService {
+  async getAll(filters: PersonnelFilters = {}) {
     try {
-      const response = await api.get("/personnel", { params });
+      const params = new URLSearchParams();
+
+      if (filters.search) params.append("search", filters.search);
+      if (filters.type_personnel)
+        params.append("type_personnel", filters.type_personnel);
+      if (filters.statut) params.append("statut", filters.statut);
+
+      const response = await api.get(`/personnel?${params.toString()}`);
       return response.data;
     } catch (error) {
-      console.error("Erreur lors de la récupération du personnel:", error);
-      throw error;
+      console.log(error);
     }
-  },
+  }
 
-  async getById(id: number): Promise<{ data: { personnel: Personnel } }> {
+  async All() {
     try {
-      const response = await api.get(`/personnel/${id}`);
+      const response = await api.get(`/personnel/all`);
       return response.data;
     } catch (error) {
-      console.error(
-        `Erreur lors de la récupération du personnel ${id}:`,
-        error
-      );
-      throw error;
+      console.log(error);
     }
-  },
+  }
 
-  async create(
-    personnelData: PersonnelCreateRequest
-  ): Promise<{ data: { personnel: Personnel } }> {
-    try {
-      const response = await api.post("/personnel", personnelData);
-      return response.data;
-    } catch (error) {
-      console.error("Erreur lors de la création du personnel:", error);
-      throw error;
-    }
-  },
+  async getById(id: number) {
+    const response = await api.get(`/personnel/${id}`);
+    return response.data;
+  }
 
-  async update(
-    id: number,
-    personnelData: Partial<PersonnelCreateRequest>
-  ): Promise<{ data: { personnel: Personnel } }> {
-    try {
-      const response = await api.put(`/personnel/${id}`, personnelData);
-      return response.data;
-    } catch (error) {
-      console.error(
-        `Erreur lors de la modification du personnel ${id}:`,
-        error
-      );
-      throw error;
-    }
-  },
+  async create(formData: FormData) {
+    const response = await api.post("/personnel", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  }
 
-  async delete(id: number): Promise<void> {
-    try {
-      await api.delete(`/personnel/${id}`);
-    } catch (error) {
-      console.error(`Erreur lors de la suppression du personnel ${id}:`, error);
-      throw error;
-    }
-  },
+  async update(id: number, formData: FormData) {
+    const response = await api.post(`/personnel/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  }
 
-  async getEnseignants(): Promise<{ data: { enseignants: Personnel[] } }> {
-    try {
-      const response = await api.get("/personnel/enseignants");
-      return response.data;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des enseignants:", error);
-      return { data: { enseignants: [] } };
-    }
-  },
-
-  async getSurveillants(): Promise<{ data: { surveillants: Personnel[] } }> {
-    try {
-      const response = await api.get("/personnel/surveillants");
-      return response.data;
-    } catch (error) {
-      console.error("Erreur lors de la récupération des surveillants:", error);
-      return { data: { surveillants: [] } };
-    }
-  },
+  async delete(id: number) {
+    const response = await api.delete(`/personnel/${id}`);
+    return response.data;
+  }
 
   async getAdministratif(): Promise<{ data: { administratif: Personnel[] } }> {
     try {
@@ -142,48 +119,27 @@ export const personnelService = {
       );
       return { data: { administratif: [] } };
     }
-  },
+  }
 
-  async getStats(): Promise<{ data: { stats: any } }> {
-    try {
-      const response = await api.get("/personnel/stats");
-      return response.data;
-    } catch (error) {
-      console.error(
-        "Erreur lors de la récupération des statistiques du personnel:",
-        error
-      );
-      return { data: { stats: { total: 0, par_type: {}, par_statut: {} } } };
-    }
-  },
+  async getTypesPersonnel() {
+    return [
+      { value: "enseignant", label: "Enseignant" },
+      { value: "surveillant", label: "Surveillant" },
+      { value: "administratif", label: "Personnel Administratif" },
+      { value: "menage", label: "Personnel de Ménage" },
+      { value: "direction", label: "Direction" },
+      { value: "autre", label: "Autre" },
+    ];
+  }
 
-  async updateStatut(
-    id: number,
-    statut: string
-  ): Promise<{ data: { personnel: Personnel } }> {
-    try {
-      const response = await api.patch(`/personnel/${id}/statut`, { statut });
-      return response.data;
-    } catch (error) {
-      console.error(
-        `Erreur lors de la mise à jour du statut du personnel ${id}:`,
-        error
-      );
-      throw error;
-    }
-  },
+  async getStatuts() {
+    return [
+      { value: "actif", label: "Actif" },
+      { value: "inactif", label: "Inactif" },
+      { value: "congé", label: "En Congé" },
+      { value: "licencie", label: "Licencié" },
+    ];
+  }
+}
 
-  async search(
-    term: string
-  ): Promise<{ data: { results: Personnel[]; total: number } }> {
-    try {
-      const response = await api.get("/personnel/search", {
-        params: { q: term },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Erreur lors de la recherche du personnel:", error);
-      return { data: { results: [], total: 0 } };
-    }
-  },
-};
+export const personnelService = new PersonnelService();

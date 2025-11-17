@@ -250,7 +250,7 @@ const EleveProfil: React.FC = () => {
         {/* En-tête avec actions */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/eleves")}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             <ArrowLeftIcon className="w-4 h-4" />

@@ -131,4 +131,26 @@ class ClasseModel extends Model
     {
         return $this->where('annee_scolaire_id', $anneeScolaireId)->findAll();
     }
+
+    public function getClassesParAnnee($anneeScolaireId)
+    {
+        return $this->where('annee_scolaire_id', $anneeScolaireId)
+            ->orderBy('nom', 'ASC')
+            ->findAll();
+    }
+
+    public function getAvecNiveau($anneeScolaireId = null)
+    {
+        $builder = $this->db->table('classes c');
+        $builder->select('c.*, n.nom as niveau_nom, n.cycle');
+        $builder->join('niveaux n', 'n.id = c.niveau_id');
+
+        if ($anneeScolaireId) {
+            $builder->where('c.annee_scolaire_id', $anneeScolaireId);
+        }
+
+        $builder->orderBy('n.ordre, c.nom');
+
+        return $builder->get()->getResultArray();
+    }
 }
